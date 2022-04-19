@@ -2,8 +2,14 @@
   <div id="main-app" class="container">
     <div class="row justify-content-center">
       <add-appointment @add="addItem"/>
-      <search-appointments @searchRecords="searchAppointments"/>
-      <appointment-list :appointments="searchedApts" @remove="removeItem" @edit="editItem"/>
+      <search-appointments
+        @searchRecords="searchAppointments"
+        :myKey="filterKey"
+        :myDir="filterDir"
+        @requestKey="changeKey"
+        @requestDir="changeDir"
+      />
+      <appointment-list :appointments="filteredApts" @remove="removeItem" @edit="editItem"/>
     </div>
   </div>
 </template>
@@ -19,6 +25,8 @@ export default {
   data: function() {
     return {
       appointments: [],
+      filterKey: "petName",
+      filterDir: "asc",
       searchTerms: "",
       aptIndex: 0
     };
@@ -47,9 +55,24 @@ export default {
           item.aptNotes.toLowerCase().match(this.searchTerms.toLowerCase())
         );
       });
+    },
+    filteredApts: function() {
+      return _.orderBy(
+        this.searchedApts,
+        item => {
+          return item[this.filterKey].toLowerCase();
+        },
+        this.filterDir
+      );
     }
   },
   methods: {
+    changeKey: function(value) {
+      this.filterKey = value;
+    },
+    changeDir: function(value) {
+      this.filterDir = value;
+    },
     searchAppointments: function(terms) {
       this.searchTerms = terms;
     },
